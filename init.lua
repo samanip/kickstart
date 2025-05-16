@@ -651,7 +651,7 @@ require('lazy').setup({
       --  So, we create new capabilities with blink.cmp, and then broadcast that to the servers.
       -- local capabilities = require('blink.cmp').get_lsp_capabilities()
 
-      local capabilities = require('cmp_nvim_lsp').default_capabilities()
+      local capabilities = require('blink.cmp').get_lsp_capabilities()
 
       -- Enable the following language servers
       --  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
@@ -663,35 +663,50 @@ require('lazy').setup({
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
-        -- clangd = {},
-        -- gopls = {},
         gopls = {
-          -- on_init = on_init,
           cmd = { 'gopls' },
           filetypes = { 'go', 'gomod', 'gotmpl', 'gowork' },
+          capabilities = capabilities,
           settings = {
             gopls = {
               analyses = {
                 unusedparams = true,
               },
               completeUnimported = true,
-              usePlaceholders = true,
+              usePlaceholders = false,
               staticcheck = true,
             },
           },
         },
-        pyright = {
-          settings = {
-            python = {
-              analysis = {
-                diagnosticMode = 'workspace',
-                autoImportCompletions = true,
-                useLibraryCodeForTypes = true,
-              },
-            },
-          },
-          capabilities = capabilities,
-        },
+        -- clangd = {},
+        -- gopls = {},
+        -- gopls = {
+        --   -- on_init = on_init,
+        --   cmd = { 'gopls' },
+        --   filetypes = { 'go', 'gomod', 'gotmpl', 'gowork' },
+        --   settings = {
+        --     gopls = {
+        --       analyses = {
+        --         unusedparams = true,
+        --       },
+        --       completeUnimported = true,
+        --       usePlaceholders = true,
+        --       staticcheck = true,
+        --     },
+        --   },
+        -- },
+        -- pyright = {
+        --   settings = {
+        --     python = {
+        --       analysis = {
+        --         diagnosticMode = 'workspace',
+        --         autoImportCompletions = true,
+        --         useLibraryCodeForTypes = true,
+        --       },
+        --     },
+        --   },
+        --   capabilities = capabilities,
+        -- },
         -- pyright = {
         --   capabilities = capabilities,
         --   settings = {
@@ -747,7 +762,6 @@ require('lazy').setup({
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format Lua code
-        'pyright',
         'black',
         'isort',
       })
@@ -758,18 +772,18 @@ require('lazy').setup({
         ensure_installed = {}, -- explicitly set to an empty table (Kickstart populates installs via mason-tool-installer)
         automatic_installation = false,
         automatic_enable = false,
-        handlers = {
-          function(server_name)
-            local server = servers[server_name] or {}
-
-            -- This handles overriding only values explicitly passed
-            -- by the server configuration above. Useful when disabling
-            -- certain features of an LSP (for example, turning off formatting for ts_ls)
-            server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
-
-            require('lspconfig')[server_name].setup(server)
-          end,
-        },
+        -- handlers = {
+        --   function(server_name)
+        --     local server = servers[server_name] or {}
+        --
+        --     -- This handles overriding only values explicitly passed
+        --     -- by the server configuration above. Useful when disabling
+        --     -- certain features of an LSP (for example, turning off formatting for ts_ls)
+        --     server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
+        --
+        --     require('lspconfig')[server_name].setup(server)
+        --   end,
+        -- },
       }
       require('lspconfig').gopls.setup {
         cmd = { 'gopls' },
@@ -860,175 +874,175 @@ require('lazy').setup({
     },
   },
   -- Autocompletion
-  {
-    'hrsh7th/nvim-cmp',
-    event = 'InsertEnter',
-    dependencies = {
-      -- Snippet engine
-      'L3MON4D3/LuaSnip',
-
-      -- Snippet source for nvim-cmp
-      'saadparwaiz1/cmp_luasnip',
-
-      -- Completion sources
-      'hrsh7th/cmp-nvim-lsp',
-      'hrsh7th/cmp-buffer',
-      'hrsh7th/cmp-path',
-      'hrsh7th/cmp-cmdline',
-
-      -- Icons in completion
-      'onsails/lspkind.nvim',
-    },
-
-    config = function()
-      local cmp = require 'cmp'
-      local luasnip = require 'luasnip'
-
-      cmp.setup {
-        snippet = {
-          expand = function(args)
-            luasnip.lsp_expand(args.body)
-          end,
-        },
-        mapping = cmp.mapping.preset.insert {
-          ['<C-Space>'] = cmp.mapping.complete(),
-          ['<CR>'] = cmp.mapping.confirm { select = true },
-          ['<Tab>'] = cmp.mapping.select_next_item(),
-          ['<S-Tab>'] = cmp.mapping.select_prev_item(),
-        },
-        sources = cmp.config.sources({
-          { name = 'nvim_lsp' },
-          { name = 'luasnip' },
-        }, {
-          { name = 'buffer' },
-          { name = 'path' },
-        }),
-        formatting = {
-          format = require('lspkind').cmp_format {
-            maxwidth = 50,
-            ellipsis_char = '...',
-          },
-        },
-      }
-
-      -- Optional: Setup completion for `/` and `:` in cmdline
-      cmp.setup.cmdline('/', {
-        mapping = cmp.mapping.preset.cmdline(),
-        sources = {
-          { name = 'buffer' },
-        },
-      })
-      cmp.setup.cmdline(':', {
-        mapping = cmp.mapping.preset.cmdline(),
-        sources = cmp.config.sources({
-          { name = 'path' },
-        }, {
-          { name = 'cmdline' },
-        }),
-      })
-    end,
-  },
-  -- { -- Autocompletion
-  --   'saghen/blink.cmp',
-  --   event = 'VimEnter',
-  --   version = '1.*',
+  -- {
+  --   'hrsh7th/nvim-cmp',
+  --   event = 'InsertEnter',
   --   dependencies = {
-  --     -- Snippet Engine
-  --     {
-  --       'L3MON4D3/LuaSnip',
-  --       version = '2.*',
-  --       build = (function()
-  --         -- Build Step is needed for regex support in snippets.
-  --         -- This step is not supported in many windows environments.
-  --         -- Remove the below condition to re-enable on windows.
-  --         if vim.fn.has 'win32' == 1 or vim.fn.executable 'make' == 0 then
-  --           return
-  --         end
-  --         return 'make install_jsregexp'
-  --       end)(),
-  --       dependencies = {
-  --         -- `friendly-snippets` contains a variety of premade snippets.
-  --         --    See the README about individual language/framework/plugin snippets:
-  --         --    https://github.com/rafamadriz/friendly-snippets
-  --         -- {
-  --         --   'rafamadriz/friendly-snippets',
-  --         --   config = function()
-  --         --     require('luasnip.loaders.from_vscode').lazy_load()
-  --         --   end,
-  --         -- },
-  --       },
-  --       opts = {},
-  --     },
-  --     'folke/lazydev.nvim',
+  --     -- Snippet engine
+  --     'L3MON4D3/LuaSnip',
+  --
+  --     -- Snippet source for nvim-cmp
+  --     'saadparwaiz1/cmp_luasnip',
+  --
+  --     -- Completion sources
+  --     'hrsh7th/cmp-nvim-lsp',
+  --     'hrsh7th/cmp-buffer',
+  --     'hrsh7th/cmp-path',
+  --     'hrsh7th/cmp-cmdline',
+  --
+  --     -- Icons in completion
+  --     'onsails/lspkind.nvim',
   --   },
-  --   --- @module 'blink.cmp'
-  --   --- @type blink.cmp.Config
-  --   opts = {
   --
-  --     keymap = {
-  --       -- 'default' (recommended) for mappings similar to built-in completions
-  --       --   <c-y> to accept ([y]es) the completion.
-  --       --    This will auto-import if your LSP supports it.
-  --       --    This will expand snippets if the LSP sent a snippet.
-  --       -- 'super-tab' for tab to accept
-  --       -- 'enter' for enter to accept
-  --       -- 'none' for no mappings
-  --       --
-  --       -- For an understanding of why the 'default' preset is recommended,
-  --       -- you will need to read `:help ins-completion`
-  --       --
-  --       -- No, but seriously. Please read `:help ins-completion`, it is really good!
-  --       --
-  --       -- All presets have the following mappings:
-  --       -- <tab>/<s-tab>: move to right/left of your snippet expansion
-  --       -- <c-space>: Open menu or open docs if already open
-  --       -- <c-n>/<c-p> or <up>/<down>: Select next/previous item
-  --       -- <c-e>: Hide menu
-  --       -- <c-k>: Toggle signature help
-  --       --
-  --       -- See :h blink-cmp-config-keymap for defining your own keymap
-  --       preset = 'default',
-  --       -- For more advanced Luasnip keymaps (e.g. selecting choice nodes, expansion) see:
-  --       --    https://github.com/L3MON4D3/LuaSnip?tab=readme-ov-file#keymaps
-  --     },
+  --   config = function()
+  --     local cmp = require 'cmp'
+  --     local luasnip = require 'luasnip'
   --
-  --     appearance = {
-  --       -- 'mono' (default) for 'Nerd Font Mono' or 'normal' for 'Nerd Font'
-  --       -- Adjusts spacing to ensure icons are aligned
-  --       nerd_font_variant = 'mono',
-  --     },
-  --
-  --     completion = {
-  --       -- By default, you may press `<c-space>` to show the documentation.
-  --       -- Optionally, set `auto_show = true` to show the documentation after a delay.
-  --       documentation = { auto_show = false, auto_show_delay_ms = 500 },
-  --     },
-  --
-  --     sources = {
-  --       default = { 'lsp', 'path', 'snippets', 'lazydev' },
-  --       providers = {
-  --         lazydev = { module = 'lazydev.integrations.blink', score_offset = 100 },
-  --         -- lsp = {
-  --         --   import_on_completion = true, -- ✅ safe as of recent blink.cmp
-  --         -- },
+  --     cmp.setup {
+  --       snippet = {
+  --         expand = function(args)
+  --           luasnip.lsp_expand(args.body)
+  --         end,
   --       },
-  --     },
+  --       mapping = cmp.mapping.preset.insert {
+  --         ['<C-Space>'] = cmp.mapping.complete(),
+  --         ['<CR>'] = cmp.mapping.confirm { select = true },
+  --         ['<Tab>'] = cmp.mapping.select_next_item(),
+  --         ['<S-Tab>'] = cmp.mapping.select_prev_item(),
+  --       },
+  --       sources = cmp.config.sources({
+  --         { name = 'nvim_lsp' },
+  --         { name = 'luasnip' },
+  --       }, {
+  --         { name = 'buffer' },
+  --         { name = 'path' },
+  --       }),
+  --       formatting = {
+  --         format = require('lspkind').cmp_format {
+  --           maxwidth = 50,
+  --           ellipsis_char = '...',
+  --         },
+  --       },
+  --     }
   --
-  --     snippets = { preset = 'luasnip' },
-  --
-  --     -- Blink.cmp includes an optional, recommended rust fuzzy matcher,
-  --     -- which automatically downloads a prebuilt binary when enabled.
-  --     --
-  --     -- By default, we use the Lua implementation instead, but you may enable
-  --     -- the rust implementation via `'prefer_rust_with_warning'`
-  --     --
-  --     -- See :h blink-cmp-config-fuzzy for more information
-  --     fuzzy = { implementation = 'lua' },
-  --
-  --     -- Shows a signature help window while you type arguments for a function
-  --     signature = { enabled = true },
-  --   },
+  --     -- Optional: Setup completion for `/` and `:` in cmdline
+  --     cmp.setup.cmdline('/', {
+  --       mapping = cmp.mapping.preset.cmdline(),
+  --       sources = {
+  --         { name = 'buffer' },
+  --       },
+  --     })
+  --     cmp.setup.cmdline(':', {
+  --       mapping = cmp.mapping.preset.cmdline(),
+  --       sources = cmp.config.sources({
+  --         { name = 'path' },
+  --       }, {
+  --         { name = 'cmdline' },
+  --       }),
+  --     })
+  --   end,
   -- },
+  { -- Autocompletion
+    'saghen/blink.cmp',
+    event = 'VimEnter',
+    version = '1.*',
+    dependencies = {
+      -- Snippet Engine
+      {
+        'L3MON4D3/LuaSnip',
+        version = '2.*',
+        build = (function()
+          -- Build Step is needed for regex support in snippets.
+          -- This step is not supported in many windows environments.
+          -- Remove the below condition to re-enable on windows.
+          if vim.fn.has 'win32' == 1 or vim.fn.executable 'make' == 0 then
+            return
+          end
+          return 'make install_jsregexp'
+        end)(),
+        dependencies = {
+          -- `friendly-snippets` contains a variety of premade snippets.
+          --    See the README about individual language/framework/plugin snippets:
+          --    https://github.com/rafamadriz/friendly-snippets
+          -- {
+          --   'rafamadriz/friendly-snippets',
+          --   config = function()
+          --     require('luasnip.loaders.from_vscode').lazy_load()
+          --   end,
+          -- },
+        },
+        opts = {},
+      },
+      'folke/lazydev.nvim',
+    },
+    --- @module 'blink.cmp'
+    --- @type blink.cmp.Config
+    opts = {
+
+      keymap = {
+        -- 'default' (recommended) for mappings similar to built-in completions
+        --   <c-y> to accept ([y]es) the completion.
+        --    This will auto-import if your LSP supports it.
+        --    This will expand snippets if the LSP sent a snippet.
+        -- 'super-tab' for tab to accept
+        -- 'enter' for enter to accept
+        -- 'none' for no mappings
+        --
+        -- For an understanding of why the 'default' preset is recommended,
+        -- you will need to read `:help ins-completion`
+        --
+        -- No, but seriously. Please read `:help ins-completion`, it is really good!
+        --
+        -- All presets have the following mappings:
+        -- <tab>/<s-tab>: move to right/left of your snippet expansion
+        -- <c-space>: Open menu or open docs if already open
+        -- <c-n>/<c-p> or <up>/<down>: Select next/previous item
+        -- <c-e>: Hide menu
+        -- <c-k>: Toggle signature help
+        --
+        -- See :h blink-cmp-config-keymap for defining your own keymap
+        preset = 'default',
+        -- For more advanced Luasnip keymaps (e.g. selecting choice nodes, expansion) see:
+        --    https://github.com/L3MON4D3/LuaSnip?tab=readme-ov-file#keymaps
+      },
+
+      appearance = {
+        -- 'mono' (default) for 'Nerd Font Mono' or 'normal' for 'Nerd Font'
+        -- Adjusts spacing to ensure icons are aligned
+        nerd_font_variant = 'mono',
+      },
+
+      completion = {
+        -- By default, you may press `<c-space>` to show the documentation.
+        -- Optionally, set `auto_show = true` to show the documentation after a delay.
+        documentation = { auto_show = false, auto_show_delay_ms = 500 },
+      },
+
+      sources = {
+        default = { 'lsp', 'path', 'snippets', 'lazydev' },
+        providers = {
+          lazydev = { module = 'lazydev.integrations.blink', score_offset = 100 },
+          -- lsp = {
+          --   import_on_completion = true, -- ✅ safe as of recent blink.cmp
+          -- },
+        },
+      },
+
+      snippets = { preset = 'luasnip' },
+
+      -- Blink.cmp includes an optional, recommended rust fuzzy matcher,
+      -- which automatically downloads a prebuilt binary when enabled.
+      --
+      -- By default, we use the Lua implementation instead, but you may enable
+      -- the rust implementation via `'prefer_rust_with_warning'`
+      --
+      -- See :h blink-cmp-config-fuzzy for more information
+      fuzzy = { implementation = 'lua' },
+
+      -- Shows a signature help window while you type arguments for a function
+      signature = { enabled = true },
+    },
+  },
 
   {
     'rose-pine/neovim',

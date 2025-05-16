@@ -48,4 +48,12 @@ return {
       end)
     end,
   },
+  {
+    'github/copilot.vim',
+    lazy = false,
+    config = function()
+      vim.g.copilot_no_tab_map = true -- Prevent default tab mapping
+      vim.api.nvim_set_keymap('i', '<C-t>', 'copilot#Accept("")', { expr = true, silent = true }) -- Map Ctrl + L to accept suggestion
+    end,
+  },
 }
