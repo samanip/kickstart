@@ -194,6 +194,8 @@ require('lazy').setup({
   {
     'lewis6991/gitsigns.nvim',
     opts = {
+
+      current_line_blame = true, -- This will enable blame by default
       on_attach = function(bufnr)
         local gitsigns = require 'gitsigns'
 
@@ -222,9 +224,9 @@ require('lazy').setup({
 
         -- Actions
         -- visual mode
-        map('v', '<leader>hs', function()
-          gitsigns.stage_hunk { vim.fn.line '.', vim.fn.line 'v' }
-        end, { desc = 'git [s]tage hunk' })
+        -- map('v', '<leader>hs', function()
+        --   gitsigns.stage_hunk { vim.fn.line '.', vim.fn.line 'v' }
+        -- end, { desc = 'git [s]tage hunk' })
         map('v', '<leader>hr', function()
           gitsigns.reset_hunk { vim.fn.line '.', vim.fn.line 'v' }
         end, { desc = 'git [r]eset hunk' })
@@ -361,27 +363,6 @@ require('lazy').setup({
       { 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font },
     },
     config = function()
-      -- Telescope is a fuzzy finder that comes with a lot of different things that
-      -- it can fuzzy find! It's more than just a "file finder", it can search
-      -- many different aspects of Neovim, your workspace, LSP, and more!
-      --
-      -- The easiest way to use Telescope, is to start by doing something like:
-      --  :Telescope help_tags
-      --
-      -- After running this command, a window will open up and you're able to
-      -- type in the prompt window. You'll see a list of `help_tags` options and
-      -- a corresponding preview of the help.
-      --
-      -- Two important keymaps to use while in Telescope are:
-      --  - Insert mode: <c-/>
-      --  - Normal mode: ?
-      --
-      -- This opens a window that shows you all of the keymaps for the current
-      -- Telescope picker. This is really useful to discover what Telescope can
-      -- do as well as how to actually do it!
-
-      -- [[ Configure Telescope ]]
-      -- See `:help telescope` and `:help telescope.setup()`
       require('telescope').setup {
         -- You can put your default mappings / updates / etc. in here
         --  All the info you're looking for is in `:help telescope.setup()`
@@ -423,6 +404,7 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>fo', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
       vim.keymap.set('n', '<leader>fz', builtin.current_buffer_fuzzy_find, { desc = '[S]earch Recent Files ("." for repeat)' })
       vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
+      vim.keymap.set('n', '<leader>gt', '<cmd>Telescope git_status<CR>', { desc = 'telescope git status' })
       vim.keymap.set('n', '<leader>ps', function()
         builtin.grep_string { search = vim.fn.input 'Grep > ' }
       end)
@@ -651,7 +633,9 @@ require('lazy').setup({
       --  So, we create new capabilities with blink.cmp, and then broadcast that to the servers.
       -- local capabilities = require('blink.cmp').get_lsp_capabilities()
 
-      local capabilities = require('blink.cmp').get_lsp_capabilities()
+      -- local capabilities = require('blink.cmp').get_lsp_capabilities()
+
+      local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
       -- Enable the following language servers
       --  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
@@ -764,6 +748,9 @@ require('lazy').setup({
         'stylua', -- Used to format Lua code
         'black',
         'isort',
+        'gofumpt',
+        'goimports-reviser',
+        'golines',
       })
 
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
@@ -799,6 +786,12 @@ require('lazy').setup({
             staticcheck = true,
           },
         },
+        capabilities = capabilities,
+      }
+
+      require('lspconfig').eslint.setup {
+        -- on_attach = on_attach,
+        -- on_init = on_init,
         capabilities = capabilities,
       }
       require('lspconfig').pyright.setup {
@@ -841,7 +834,7 @@ require('lazy').setup({
           return nil
         else
           return {
-            timeout_ms = 500,
+            timeout_ms = 1000,
             lsp_format = 'fallback',
           }
         end
@@ -874,175 +867,175 @@ require('lazy').setup({
     },
   },
   -- Autocompletion
-  -- {
-  --   'hrsh7th/nvim-cmp',
-  --   event = 'InsertEnter',
-  --   dependencies = {
-  --     -- Snippet engine
-  --     'L3MON4D3/LuaSnip',
-  --
-  --     -- Snippet source for nvim-cmp
-  --     'saadparwaiz1/cmp_luasnip',
-  --
-  --     -- Completion sources
-  --     'hrsh7th/cmp-nvim-lsp',
-  --     'hrsh7th/cmp-buffer',
-  --     'hrsh7th/cmp-path',
-  --     'hrsh7th/cmp-cmdline',
-  --
-  --     -- Icons in completion
-  --     'onsails/lspkind.nvim',
-  --   },
-  --
-  --   config = function()
-  --     local cmp = require 'cmp'
-  --     local luasnip = require 'luasnip'
-  --
-  --     cmp.setup {
-  --       snippet = {
-  --         expand = function(args)
-  --           luasnip.lsp_expand(args.body)
-  --         end,
-  --       },
-  --       mapping = cmp.mapping.preset.insert {
-  --         ['<C-Space>'] = cmp.mapping.complete(),
-  --         ['<CR>'] = cmp.mapping.confirm { select = true },
-  --         ['<Tab>'] = cmp.mapping.select_next_item(),
-  --         ['<S-Tab>'] = cmp.mapping.select_prev_item(),
-  --       },
-  --       sources = cmp.config.sources({
-  --         { name = 'nvim_lsp' },
-  --         { name = 'luasnip' },
-  --       }, {
-  --         { name = 'buffer' },
-  --         { name = 'path' },
-  --       }),
-  --       formatting = {
-  --         format = require('lspkind').cmp_format {
-  --           maxwidth = 50,
-  --           ellipsis_char = '...',
-  --         },
-  --       },
-  --     }
-  --
-  --     -- Optional: Setup completion for `/` and `:` in cmdline
-  --     cmp.setup.cmdline('/', {
-  --       mapping = cmp.mapping.preset.cmdline(),
-  --       sources = {
-  --         { name = 'buffer' },
-  --       },
-  --     })
-  --     cmp.setup.cmdline(':', {
-  --       mapping = cmp.mapping.preset.cmdline(),
-  --       sources = cmp.config.sources({
-  --         { name = 'path' },
-  --       }, {
-  --         { name = 'cmdline' },
-  --       }),
-  --     })
-  --   end,
-  -- },
-  { -- Autocompletion
-    'saghen/blink.cmp',
-    event = 'VimEnter',
-    version = '1.*',
+  {
+    'hrsh7th/nvim-cmp',
+    event = 'InsertEnter',
     dependencies = {
-      -- Snippet Engine
-      {
-        'L3MON4D3/LuaSnip',
-        version = '2.*',
-        build = (function()
-          -- Build Step is needed for regex support in snippets.
-          -- This step is not supported in many windows environments.
-          -- Remove the below condition to re-enable on windows.
-          if vim.fn.has 'win32' == 1 or vim.fn.executable 'make' == 0 then
-            return
-          end
-          return 'make install_jsregexp'
-        end)(),
-        dependencies = {
-          -- `friendly-snippets` contains a variety of premade snippets.
-          --    See the README about individual language/framework/plugin snippets:
-          --    https://github.com/rafamadriz/friendly-snippets
-          -- {
-          --   'rafamadriz/friendly-snippets',
-          --   config = function()
-          --     require('luasnip.loaders.from_vscode').lazy_load()
-          --   end,
-          -- },
-        },
-        opts = {},
-      },
-      'folke/lazydev.nvim',
+      -- Snippet engine
+      'L3MON4D3/LuaSnip',
+
+      -- Snippet source for nvim-cmp
+      'saadparwaiz1/cmp_luasnip',
+
+      -- Completion sources
+      'hrsh7th/cmp-nvim-lsp',
+      'hrsh7th/cmp-buffer',
+      'hrsh7th/cmp-path',
+      'hrsh7th/cmp-cmdline',
+
+      -- Icons in completion
+      'onsails/lspkind.nvim',
     },
-    --- @module 'blink.cmp'
-    --- @type blink.cmp.Config
-    opts = {
 
-      keymap = {
-        -- 'default' (recommended) for mappings similar to built-in completions
-        --   <c-y> to accept ([y]es) the completion.
-        --    This will auto-import if your LSP supports it.
-        --    This will expand snippets if the LSP sent a snippet.
-        -- 'super-tab' for tab to accept
-        -- 'enter' for enter to accept
-        -- 'none' for no mappings
-        --
-        -- For an understanding of why the 'default' preset is recommended,
-        -- you will need to read `:help ins-completion`
-        --
-        -- No, but seriously. Please read `:help ins-completion`, it is really good!
-        --
-        -- All presets have the following mappings:
-        -- <tab>/<s-tab>: move to right/left of your snippet expansion
-        -- <c-space>: Open menu or open docs if already open
-        -- <c-n>/<c-p> or <up>/<down>: Select next/previous item
-        -- <c-e>: Hide menu
-        -- <c-k>: Toggle signature help
-        --
-        -- See :h blink-cmp-config-keymap for defining your own keymap
-        preset = 'default',
-        -- For more advanced Luasnip keymaps (e.g. selecting choice nodes, expansion) see:
-        --    https://github.com/L3MON4D3/LuaSnip?tab=readme-ov-file#keymaps
-      },
+    config = function()
+      local cmp = require 'cmp'
+      local luasnip = require 'luasnip'
 
-      appearance = {
-        -- 'mono' (default) for 'Nerd Font Mono' or 'normal' for 'Nerd Font'
-        -- Adjusts spacing to ensure icons are aligned
-        nerd_font_variant = 'mono',
-      },
-
-      completion = {
-        -- By default, you may press `<c-space>` to show the documentation.
-        -- Optionally, set `auto_show = true` to show the documentation after a delay.
-        documentation = { auto_show = false, auto_show_delay_ms = 500 },
-      },
-
-      sources = {
-        default = { 'lsp', 'path', 'snippets', 'lazydev' },
-        providers = {
-          lazydev = { module = 'lazydev.integrations.blink', score_offset = 100 },
-          -- lsp = {
-          --   import_on_completion = true, -- ✅ safe as of recent blink.cmp
-          -- },
+      cmp.setup {
+        snippet = {
+          expand = function(args)
+            luasnip.lsp_expand(args.body)
+          end,
         },
-      },
+        mapping = cmp.mapping.preset.insert {
+          ['<C-Space>'] = cmp.mapping.complete(),
+          ['<CR>'] = cmp.mapping.confirm { select = true },
+          ['<Tab>'] = cmp.mapping.select_next_item(),
+          ['<S-Tab>'] = cmp.mapping.select_prev_item(),
+        },
+        sources = cmp.config.sources({
+          { name = 'nvim_lsp' },
+          { name = 'luasnip' },
+        }, {
+          { name = 'buffer' },
+          { name = 'path' },
+        }),
+        formatting = {
+          format = require('lspkind').cmp_format {
+            maxwidth = 50,
+            ellipsis_char = '...',
+          },
+        },
+      }
 
-      snippets = { preset = 'luasnip' },
-
-      -- Blink.cmp includes an optional, recommended rust fuzzy matcher,
-      -- which automatically downloads a prebuilt binary when enabled.
-      --
-      -- By default, we use the Lua implementation instead, but you may enable
-      -- the rust implementation via `'prefer_rust_with_warning'`
-      --
-      -- See :h blink-cmp-config-fuzzy for more information
-      fuzzy = { implementation = 'lua' },
-
-      -- Shows a signature help window while you type arguments for a function
-      signature = { enabled = true },
-    },
+      -- Optional: Setup completion for `/` and `:` in cmdline
+      -- cmp.setup.cmdline('/', {
+      --   mapping = cmp.mapping.preset.cmdline(),
+      --   sources = {
+      --     { name = 'buffer' },
+      --   },
+      -- })
+      -- cmp.setup.cmdline(':', {
+      --   mapping = cmp.mapping.preset.cmdline(),
+      --   sources = cmp.config.sources({
+      --     { name = 'path' },
+      --   }, {
+      --     { name = 'cmdline' },
+      --   }),
+      -- })
+    end,
   },
+  -- { -- Autocompletion
+  --   'saghen/blink.cmp',
+  --   event = 'VimEnter',
+  --   version = '1.*',
+  --   dependencies = {
+  --     -- Snippet Engine
+  --     {
+  --       'L3MON4D3/LuaSnip',
+  --       version = '2.*',
+  --       build = (function()
+  --         -- Build Step is needed for regex support in snippets.
+  --         -- This step is not supported in many windows environments.
+  --         -- Remove the below condition to re-enable on windows.
+  --         if vim.fn.has 'win32' == 1 or vim.fn.executable 'make' == 0 then
+  --           return
+  --         end
+  --         return 'make install_jsregexp'
+  --       end)(),
+  --       dependencies = {
+  --         -- `friendly-snippets` contains a variety of premade snippets.
+  --         --    See the README about individual language/framework/plugin snippets:
+  --         --    https://github.com/rafamadriz/friendly-snippets
+  --         -- {
+  --         --   'rafamadriz/friendly-snippets',
+  --         --   config = function()
+  --         --     require('luasnip.loaders.from_vscode').lazy_load()
+  --         --   end,
+  --         -- },
+  --       },
+  --       opts = {},
+  --     },
+  --     'folke/lazydev.nvim',
+  --   },
+  --   --- @module 'blink.cmp'
+  --   --- @type blink.cmp.Config
+  --   opts = {
+  --
+  --     keymap = {
+  --       -- 'default' (recommended) for mappings similar to built-in completions
+  --       --   <c-y> to accept ([y]es) the completion.
+  --       --    This will auto-import if your LSP supports it.
+  --       --    This will expand snippets if the LSP sent a snippet.
+  --       -- 'super-tab' for tab to accept
+  --       -- 'enter' for enter to accept
+  --       -- 'none' for no mappings
+  --       --
+  --       -- For an understanding of why the 'default' preset is recommended,
+  --       -- you will need to read `:help ins-completion`
+  --       --
+  --       -- No, but seriously. Please read `:help ins-completion`, it is really good!
+  --       --
+  --       -- All presets have the following mappings:
+  --       -- <tab>/<s-tab>: move to right/left of your snippet expansion
+  --       -- <c-space>: Open menu or open docs if already open
+  --       -- <c-n>/<c-p> or <up>/<down>: Select next/previous item
+  --       -- <c-e>: Hide menu
+  --       -- <c-k>: Toggle signature help
+  --       --
+  --       -- See :h blink-cmp-config-keymap for defining your own keymap
+  --       preset = 'enter',
+  --       -- For more advanced Luasnip keymaps (e.g. selecting choice nodes, expansion) see:
+  --       --    https://github.com/L3MON4D3/LuaSnip?tab=readme-ov-file#keymaps
+  --     },
+  --
+  --     appearance = {
+  --       -- 'mono' (default) for 'Nerd Font Mono' or 'normal' for 'Nerd Font'
+  --       -- Adjusts spacing to ensure icons are aligned
+  --       nerd_font_variant = 'mono',
+  --     },
+  --
+  --     completion = {
+  --       -- By default, you may press `<c-space>` to show the documentation.
+  --       -- Optionally, set `auto_show = true` to show the documentation after a delay.
+  --       documentation = { auto_show = false, auto_show_delay_ms = 500 },
+  --     },
+  --
+  --     sources = {
+  --       default = { 'lsp', 'path', 'snippets', 'lazydev' },
+  --       providers = {
+  --         lazydev = { module = 'lazydev.integrations.blink', score_offset = 100 },
+  --         -- lsp = {
+  --         --   import_on_completion = true, -- ✅ safe as of recent blink.cmp
+  --         -- },
+  --       },
+  --     },
+  --
+  --     snippets = { preset = 'luasnip' },
+  --
+  --     -- Blink.cmp includes an optional, recommended rust fuzzy matcher,
+  --     -- which automatically downloads a prebuilt binary when enabled.
+  --     --
+  --     -- By default, we use the Lua implementation instead, but you may enable
+  --     -- the rust implementation via `'prefer_rust_with_warning'`
+  --     --
+  --     -- See :h blink-cmp-config-fuzzy for more information
+  --     fuzzy = { implementation = 'lua' },
+  --
+  --     -- Shows a signature help window while you type arguments for a function
+  --     signature = { enabled = true },
+  --   },
+  -- },
 
   {
     'rose-pine/neovim',
@@ -1062,7 +1055,7 @@ require('lazy').setup({
           comments = { italic = false },
         },
         -- Make background transparent/disabled
-        disable_background = true,
+        -- disable_background = true,
       }
 
       -- Load the colorscheme
@@ -1070,7 +1063,7 @@ require('lazy').setup({
 
       -- Set background to pure black for general UI
       vim.cmd [[highlight Normal guibg=#000000]]
-      vim.cmd [[highlight NormalFloat guibg=#000000]]
+      -- vim.cmd [[highlight NormalFloat guibg=#000000]]
       vim.cmd [[highlight NormalNC guibg=#000000]]
 
       -- Set Telescope elements to have black background
@@ -1089,27 +1082,27 @@ require('lazy').setup({
       -- vim.cmd [[highlight TelescopePreviewNormal guibg=#000000]]
     end,
   },
-  -- { -- You can easily change to a different colorscheme.
-  --   -- Change the name of the colorscheme plugin below, and then
-  --   -- change the command in the config to whatever the name of that colorscheme is.
-  --   --
-  --   -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-  --   'folke/tokyonight.nvim',
-  --   priority = 1000, -- Make sure to load this before all the other start plugins.
-  --   config = function()
-  --     ---@diagnostic disable-next-line: missing-fields
-  --     require('tokyonight').setup {
-  --       styles = {
-  --         comments = { italic = false }, -- Disable italics in comments
-  --       },
-  --     }
-  --
-  --     -- Load the colorscheme here.
-  --     -- Like many other themes, this one has different styles, and you could load
-  --     -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-  --     vim.cmd.colorscheme 'tokyonight-night'
-  --   end,
-  -- },
+  -- -- { -- You can easily change to a different colorscheme.
+  -- --   -- Change the name of the colorscheme plugin below, and then
+  -- --   -- change the command in the config to whatever the name of that colorscheme is.
+  -- --   --
+  -- --   -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
+  -- --   'folke/tokyonight.nvim',
+  -- --   priority = 1000, -- Make sure to load this before all the other start plugins.
+  -- --   config = function()
+  -- --     ---@diagnostic disable-next-line: missing-fields
+  -- --     require('tokyonight').setup {
+  -- --       styles = {
+  -- --         comments = { italic = false }, -- Disable italics in comments
+  -- --       },
+  -- --     }
+  -- --
+  -- --     -- Load the colorscheme here.
+  -- --     -- Like many other themes, this one has different styles, and you could load
+  -- --     -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
+  -- --     vim.cmd.colorscheme 'tokyonight-night'
+  -- --   end,
+  -- -- },
 
   -- Highlight todo, notes, etc in comments
   { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
