@@ -56,4 +56,17 @@ return {
       vim.api.nvim_set_keymap('i', '<C-t>', 'copilot#Accept("")', { expr = true, silent = true }) -- Map Ctrl + L to accept suggestion
     end,
   },
+  {
+    'ray-x/lsp_signature.nvim',
+    event = 'InsertEnter',
+    opts = {
+      bind = true,
+      handler_opts = {
+        border = 'rounded',
+      },
+    },
+    config = function(_, opts)
+      require('lsp_signature').setup(opts)
+    end,
+  },
 }
