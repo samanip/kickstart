@@ -69,4 +69,8 @@ return {
       require('lsp_signature').setup(opts)
     end,
   },
+  {
+    'eandrju/cellular-automaton.nvim',
+    lazy = false,
+  },
 }
