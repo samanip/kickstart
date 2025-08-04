@@ -400,8 +400,11 @@ require('lazy').setup({
         }
       end, { desc = '[F]ind [E]nv files' })
       vim.keymap.set('n', '<leader>fa', function()
-        builtin.find_files { hidden = true }
-      end, { desc = '[F]ind [A]ll Files (including hidden)' })
+        builtin.find_files {
+          hidden = true,
+          no_ignore = true, -- This ignores .gitignore rules
+        }
+      end, { desc = '[F]ind [A]ll Files (including hidden and ignored)' })
       vim.keymap.set('n', '<leader>ss', builtin.builtin, { desc = '[S]earch [S]elect Telescope' })
       vim.keymap.set('n', '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
       vim.keymap.set('n', '<leader>fw', builtin.live_grep, { desc = '[S]earch by [G]rep' })
@@ -794,10 +797,15 @@ require('lazy').setup({
         },
         capabilities = capabilities,
       }
+      require('lspconfig').ts_ls.setup {
+        on_attach = on_attach,
+        on_init = on_init,
+        capabilities = capabilities,
+      }
 
       require('lspconfig').eslint.setup {
-        -- on_attach = on_attach,
-        -- on_init = on_init,
+        on_attach = on_attach,
+        on_init = on_init,
         capabilities = capabilities,
       }
       require('lspconfig').pyright.setup {
@@ -851,6 +859,8 @@ require('lazy').setup({
         -- Conform can also run multiple formatters sequentially
         python = { 'isort', 'black' },
         go = { 'gofumpt', 'goimports-reviser', 'golines' },
+        javascript = { 'prettier' },
+        typescript = { 'prettier' },
         --
         -- You can use 'stop_after_first' to run the first available formatter from the list
         -- javascript = { "prettierd", "prettier", stop_after_first = true },
@@ -868,6 +878,9 @@ require('lazy').setup({
             '--profile',
             'black',
           },
+        },
+        eslint_d = {
+          prepend_args = { '--fix' },
         },
       },
     },
