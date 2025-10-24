@@ -15,7 +15,7 @@ map('x', '<leader>p', [["_dP]])
 
 map('', ';', ';')
 map('', ',', ',')
-map('n', '<Leader>bd', ':bd<CR>', { noremap = true, silent = true })
+-- map('n', '<Leader>bd', ':bd<CR>', { noremap = true, silent = true })
 vim.keymap.set('n', 'n', 'nzzzv')
 vim.keymap.set('n', 'N', 'Nzzzv')
 -- map("n", "<C-t>", function()
