@@ -131,8 +131,8 @@ return {
           },
           {
             elements = {
-              { id = 'repl', size = 0.7 },
-              { id = 'console', size = 0.3 },
+              { id = 'repl', size = 0.9 },
+              { id = 'console', size = 0.1 },
             },
             size = 20,
             position = 'bottom',
@@ -147,10 +147,10 @@ return {
           },
         },
       }
-      -- Hover to see variable value
-      vim.keymap.set('n', 'K', function()
-        require('dapui').eval()
-      end)
+      -- -- Hover to see variable value
+      -- vim.keymap.set('n', 'K', function()
+      --   require('dapui').eval()
+      -- end)
 
       -- Setup Python debugging
       dap_python.setup 'python'
