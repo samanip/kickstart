@@ -781,10 +781,10 @@ require('lazy').setup({
         --   end,
         -- },
       }
-      require('lspconfig').gopls.setup {
+      vim.lsp.config('gopls', {
         cmd = { 'gopls' },
         filetypes = { 'go', 'gomod', 'gotmpl', 'gowork' },
-        root_dir = require('lspconfig').util.root_pattern('go.work', 'go.mod', '.git'),
+        root_markers = { 'go.work', 'go.mod', '.git' },
         settings = {
           gopls = {
             analyses = {
@@ -796,34 +796,43 @@ require('lazy').setup({
           },
         },
         capabilities = capabilities,
-      }
-      require('lspconfig').ts_ls.setup {
-        on_attach = on_attach,
-        on_init = on_init,
+      })
+      vim.lsp.config('ts_ls', {
         capabilities = capabilities,
-      }
-
-      require('lspconfig').eslint.setup {
-        on_attach = on_attach,
-        on_init = on_init,
+      })
+      vim.lsp.config('rust_analyzer', {
         capabilities = capabilities,
-      }
-      require('lspconfig').zls.setup {
-        on_attach = on_attach,
+      })
+      vim.lsp.config('eslint', {
         capabilities = capabilities,
-      }
-      require('lspconfig').pyright.setup {
+      })
+      vim.lsp.config('zls', {
+        capabilities = capabilities,
+      })
+      vim.lsp.config('pyright', {
         settings = {
           python = {
             analysis = {
               autoSearchPaths = true,
               diagnosticMode = 'workspace',
-              useLibraryCodeForTypes = true, -- Force this to false
+              useLibraryCodeForTypes = true,
+              autoImportCompletions = true,
             },
           },
         },
         capabilities = capabilities,
-      }
+      })
+      vim.lsp.config('lua_ls', {
+        settings = {
+          Lua = {
+            completion = {
+              callSnippet = 'Replace',
+            },
+          },
+        },
+        capabilities = capabilities,
+      })
+      vim.lsp.enable { 'gopls', 'ts_ls', 'rust_analyzer', 'eslint', 'zls', 'pyright', 'lua_ls' }
     end,
   },
 
@@ -1060,51 +1069,64 @@ require('lazy').setup({
   --   },
   -- },
 
-  {
-    'rose-pine/neovim',
-    priority = 1000,
-    config = function()
-      ---@diagnostic disable-next-line: missing-fields
-      require('rose-pine').setup {
-        -- Disable italics
-        styles = {
-          bold = true,
-          italic = false,
-          keywords = { italic = false },
-          functions = { italic = false },
-          conditionals = { italic = false },
-          loops = { italic = false },
-          variables = { italic = false },
-          comments = { italic = false },
-        },
-        -- Make background transparent/disabled
-        -- disable_background = true,
-      }
+  -- COLORSHEME
+  -- {
+  --   'rose-pine/neovim',
+  --   priority = 1000,
+  --   config = function()
+  --     ---@diagnostic disable-next-line: missing-fields
+  --     require('rose-pine').setup {
+  --       -- Disable italics
+  --       styles = {
+  --         bold = true,
+  --         italic = false,
+  --         keywords = { italic = false },
+  --         functions = { italic = false },
+  --         conditionals = { italic = false },
+  --         loops = { italic = false },
+  --         variables = { italic = false },
+  --         comments = { italic = false },
+  --       },
+  --       -- Make background transparent/disabled
+  --       -- disable_background = true,
+  --     }
+  --
+  --     -- Load the colorscheme
+  --     vim.cmd.colorscheme 'rose-pine'
+  --
+  --     -- Set background to pure black for general UI
+  --     vim.cmd [[highlight Normal guibg=#000000]]
+  --     -- vim.cmd [[highlight NormalFloat guibg=#000000]]
+  --     vim.cmd [[highlight NormalNC guibg=#000000]]
+  --
+  --     -- Set Telescope elements to have black background
+  --     vim.cmd [[highlight TelescopeNormal guibg=#000000]]
+  --     vim.cmd [[highlight TelescopePrompt guibg=#000000]]
+  --     vim.cmd [[highlight TelescopeResults guibg=#000000]]
+  --
+  --     -- ============================
+  --     -- vim.cmd [[highlight TelescopePromptBorder guibg=#000000 guifg=#000000]]
+  --     -- vim.cmd [[highlight TelescopeResultsBorder guibg=#000000 guifg=#000000]]
+  --     -- vim.cmd [[highlight TelescopePreviewBorder guibg=#000000 guifg=#000000]]
+  --     -- vim.cmd [[highlight TelescopePreviewTitle guibg=#000000]]
+  --     -- vim.cmd [[highlight TelescopePromptTitle guibg=#000000]]
+  --     -- vim.cmd [[highlight TelescopeResultsTitle guibg=#000000]]
+  --     -- vim.cmd [[highlight TelescopeSelection guibg=#101010]] -- Slightly lighter for selection
+  --     -- vim.cmd [[highlight TelescopePreviewNormal guibg=#000000]]
+  --   end,
+  -- },
+  -- COLORSSCHEME END
 
-      -- Load the colorscheme
-      vim.cmd.colorscheme 'rose-pine'
-
-      -- Set background to pure black for general UI
-      vim.cmd [[highlight Normal guibg=#000000]]
-      -- vim.cmd [[highlight NormalFloat guibg=#000000]]
-      vim.cmd [[highlight NormalNC guibg=#000000]]
-
-      -- Set Telescope elements to have black background
-      vim.cmd [[highlight TelescopeNormal guibg=#000000]]
-      vim.cmd [[highlight TelescopePrompt guibg=#000000]]
-      vim.cmd [[highlight TelescopeResults guibg=#000000]]
-
-      -- ============================
-      -- vim.cmd [[highlight TelescopePromptBorder guibg=#000000 guifg=#000000]]
-      -- vim.cmd [[highlight TelescopeResultsBorder guibg=#000000 guifg=#000000]]
-      -- vim.cmd [[highlight TelescopePreviewBorder guibg=#000000 guifg=#000000]]
-      -- vim.cmd [[highlight TelescopePreviewTitle guibg=#000000]]
-      -- vim.cmd [[highlight TelescopePromptTitle guibg=#000000]]
-      -- vim.cmd [[highlight TelescopeResultsTitle guibg=#000000]]
-      -- vim.cmd [[highlight TelescopeSelection guibg=#101010]] -- Slightly lighter for selection
-      -- vim.cmd [[highlight TelescopePreviewNormal guibg=#000000]]
-    end,
-  },
+  -- gruber-darker config moved to lua/custom/plugins/init.lua
+-- {
+--   "blazkowolf/gruber-darker.nvim",
+--   opts = {
+--     bold = false,
+--     italic = {
+--       strings = false,
+--     },
+--   },
+-- }
   -- -- { -- You can easily change to a different colorscheme.
   -- --   -- Change the name of the colorscheme plugin below, and then
   -- --   -- change the command in the config to whatever the name of that colorscheme is.

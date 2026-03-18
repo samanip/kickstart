@@ -90,3 +90,5 @@ end
 map('n', '<Leader>rd', ':lua removeDouble()<CR>', { noremap = true, silent = true })
 vim.keymap.set('i', '<C-h>', '<Left>', { desc = 'Move left in insert mode' })
 vim.keymap.set('i', '<C-l>', '<Right>', { desc = 'Move right in insert mode' })
+vim.keymap.set('n', '<leader>jf', ':%!jq .<CR>', { desc = 'Format JSON (pretty)' })
+vim.keymap.set('n', 'gb', ':Git blame<CR>', { desc = 'Git blame' })

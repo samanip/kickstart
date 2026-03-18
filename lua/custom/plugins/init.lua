@@ -59,6 +59,7 @@ return {
   {
     'tpope/vim-fugitive',
     lazy = false,
+    dependencies = { 'tpope/vim-rhubarb' },
   },
   {
     'ray-x/lsp_signature.nvim',
@@ -204,7 +205,13 @@ return {
     'folke/flash.nvim',
     event = 'VeryLazy',
     ---@type Flash.Config
-    opts = {},
+    opts = {
+      modes = {
+        char = {
+          enabled = false,
+        },
+      },
+    },
     keys = {
       {
         'zk',
@@ -248,4 +255,69 @@ return {
       -- },
     },
   },
+  {
+    'blazkowolf/gruber-darker.nvim',
+    priority = 1000,
+    opts = {
+      bold = false,
+      italic = {
+        strings = false,
+      },
+    },
+    config = function(_, opts)
+      require('gruber-darker').setup(opts)
+      vim.cmd.colorscheme 'gruber-darker'
+    end,
+  },
+  -- {
+  --   'rebelot/kanagawa.nvim',
+  --   priority = 1000,
+  --   config = function()
+  --     require('kanagawa').setup {
+  --       compile = false,
+  --       undercurl = true,
+  --       commentStyle = { italic = true },
+  --       functionStyle = {},
+  --       keywordStyle = { italic = true },
+  --       statementStyle = { bold = true },
+  --       typeStyle = {},
+  --       transparent = false,
+  --       dimInactive = false,
+  --       terminalColors = true,
+  --       colors = {
+  --         palette = {},
+  --         theme = { wave = {}, lotus = {}, dragon = {}, all = {} },
+  --       },
+  --       overrides = function(colors)
+  --         return {}
+  --       end,
+  --       theme = 'wave',
+  --       background = {
+  --         dark = 'wave',
+  --         light = 'lotus',
+  --       },
+  --     }
+  --     vim.cmd.colorscheme 'kanagawa-dragon'
+  --   end,
+  -- },
+  -- {
+  --   'ellisonleao/gruvbox.nvim',
+  --   priority = 1000,
+  --   config = function()
+  --     require('gruvbox').setup {}
+  --     vim.cmd.colorscheme 'gruvbox'
+  --   end,
+  -- },
+  -- {
+  --   'scottmckendry/cyberdream.nvim',
+  --   lazy = false,
+  --   priority = 1000,
+  --   config = function()
+  --     require('cyberdream').setup {
+  --       transparent = true,
+  --       theme = { variant = 'default' },
+  --     }
+  --     vim.cmd.colorscheme 'cyberdream'
+  --   end,
+  -- },
 }
