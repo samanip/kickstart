@@ -4,6 +4,220 @@
 -- See the kickstart.nvim README for more information
 return {
   {
+    'nvim-lualine/lualine.nvim',
+    dependencies = { 'nvim-tree/nvim-web-devicons' },
+    config = function()
+      local lualine = require 'lualine'
+
+      local conditions = {
+        buffer_not_empty = function()
+          return vim.fn.empty(vim.fn.expand '%:t') ~= 1
+        end,
+        hide_in_width = function()
+          return vim.fn.winwidth(0) > 80
+        end,
+        check_git_workspace = function()
+          local filepath = vim.fn.expand '%:p:h'
+          local gitdir = vim.fn.finddir('.git', filepath .. ';')
+          return gitdir and #gitdir > 0 and #gitdir < #filepath
+        end,
+      }
+
+      local config = {
+        options = {
+          component_separators = '',
+          section_separators = '',
+          theme = 'auto',
+        },
+        sections = {
+          lualine_a = {},
+          lualine_b = {},
+          lualine_y = {},
+          lualine_z = {},
+          lualine_c = {},
+          lualine_x = {},
+        },
+        inactive_sections = {
+          lualine_a = {},
+          lualine_b = {},
+          lualine_y = {},
+          lualine_z = {},
+          lualine_c = {},
+          lualine_x = {},
+        },
+      }
+
+      local function ins_left(component)
+        table.insert(config.sections.lualine_c, component)
+      end
+
+      local function ins_right(component)
+        table.insert(config.sections.lualine_x, component)
+      end
+
+      ins_left {
+        function()
+          return '▊'
+        end,
+        color = 'Title',
+        padding = { left = 0, right = 1 },
+      }
+
+      ins_left {
+        function()
+          return ''
+        end,
+        color = function()
+          local mode_color = {
+            n = 'DiagnosticError',
+            i = 'DiagnosticOk',
+            v = 'DiagnosticInfo',
+            ['\22'] = 'DiagnosticInfo',
+            V = 'DiagnosticInfo',
+            c = 'DiagnosticHint',
+            no = 'DiagnosticError',
+            s = 'DiagnosticWarn',
+            S = 'DiagnosticWarn',
+            ['\19'] = 'DiagnosticWarn',
+            ic = 'DiagnosticWarn',
+            R = 'Constant',
+            Rv = 'Constant',
+            cv = 'DiagnosticError',
+            ce = 'DiagnosticError',
+            r = 'DiagnosticInfo',
+            rm = 'DiagnosticInfo',
+            ['r?'] = 'DiagnosticInfo',
+            ['!'] = 'DiagnosticError',
+            t = 'DiagnosticError',
+          }
+          return mode_color[vim.fn.mode()] or 'Normal'
+        end,
+        padding = { right = 1 },
+      }
+
+      ins_left {
+        'filesize',
+        cond = conditions.buffer_not_empty,
+      }
+
+      ins_left {
+        'filename',
+        path = 2,
+        cond = conditions.buffer_not_empty,
+        color = { gui = 'bold' },
+      }
+
+      ins_left { 'location' }
+
+      ins_left { 'progress', color = { gui = 'bold' } }
+
+      ins_left {
+        'diagnostics',
+        sources = { 'nvim_diagnostic' },
+        symbols = { error = ' ', warn = ' ', info = ' ' },
+      }
+
+      ins_left {
+        function()
+          return '%='
+        end,
+      }
+
+      ins_left {
+        function()
+          local msg = 'No Active Lsp'
+          local buf_ft = vim.api.nvim_get_option_value('filetype', { buf = 0 })
+          local clients = vim.lsp.get_clients()
+          if next(clients) == nil then
+            return msg
+          end
+          for _, client in ipairs(clients) do
+            local filetypes = client.config.filetypes
+            if filetypes and vim.fn.index(filetypes, buf_ft) ~= -1 then
+              return client.name
+            end
+          end
+          return msg
+        end,
+        icon = ' LSP:',
+        color = { gui = 'bold' },
+      }
+
+      ins_right {
+        'o:encoding',
+        fmt = string.upper,
+        cond = conditions.hide_in_width,
+        color = { gui = 'bold' },
+      }
+
+      ins_right {
+        'fileformat',
+        fmt = string.upper,
+        icons_enabled = false,
+        color = { gui = 'bold' },
+      }
+
+      ins_right {
+        'branch',
+        icon = '',
+        color = { gui = 'bold' },
+      }
+
+      ins_right {
+        'diff',
+        symbols = { added = ' ', modified = '󰝤 ', removed = ' ' },
+        cond = conditions.hide_in_width,
+      }
+
+      ins_right {
+        function()
+          return '▊'
+        end,
+        color = 'Title',
+        padding = { left = 1 },
+      }
+
+      lualine.setup(config)
+    end,
+  },
+  {
+    'folke/trouble.nvim',
+    opts = {}, -- for default options, refer to the configuration section for custom setup.
+    cmd = 'Trouble',
+    keys = {
+      {
+        '<leader>xX',
+        '<cmd>Trouble diagnostics toggle<cr>',
+        desc = 'Diagnostics (Trouble)',
+      },
+      {
+        '<leader>xx',
+        '<cmd>Trouble diagnostics toggle filter.buf=0<cr>',
+        desc = 'Buffer Diagnostics (Trouble)',
+      },
+      {
+        '<leader>cs',
+        '<cmd>Trouble symbols toggle focus=false<cr>',
+        desc = 'Symbols (Trouble)',
+      },
+      {
+        '<leader>cl',
+        '<cmd>Trouble lsp toggle focus=false win.position=right<cr>',
+        desc = 'LSP Definitions / references / ... (Trouble)',
+      },
+      {
+        '<leader>xL',
+        '<cmd>Trouble loclist toggle<cr>',
+        desc = 'Location List (Trouble)',
+      },
+      {
+        '<leader>xQ',
+        '<cmd>Trouble qflist toggle<cr>',
+        desc = 'Quickfix List (Trouble)',
+      },
+    },
+  },
+  {
     'ThePrimeagen/harpoon',
     branch = 'harpoon2',
     dependencies = { 'nvim-lua/plenary.nvim' },
@@ -11,7 +225,11 @@ return {
       local harpoon = require 'harpoon'
 
       -- REQUIRED
-      harpoon:setup()
+      harpoon:setup {
+        settings = {
+          save_on_toggle = true,
+        },
+      }
 
       -- Setup keymaps
       vim.keymap.set('n', '<leader>a', function()
@@ -61,19 +279,19 @@ return {
     lazy = false,
     dependencies = { 'tpope/vim-rhubarb' },
   },
-  {
-    'ray-x/lsp_signature.nvim',
-    event = 'InsertEnter',
-    opts = {
-      bind = true,
-      handler_opts = {
-        border = 'rounded',
-      },
-    },
-    config = function(_, opts)
-      require('lsp_signature').setup(opts)
-    end,
-  },
+  -- {
+  --   'ray-x/lsp_signature.nvim',
+  --   event = 'InsertEnter',
+  --   opts = {
+  --     bind = true,
+  --     handler_opts = {
+  --       border = 'rounded',
+  --     },
+  --   },
+  --   config = function(_, opts)
+  --     require('lsp_signature').setup(opts)
+  --   end,
+  -- },
   {
     'eandrju/cellular-automaton.nvim',
     lazy = false,
@@ -201,6 +419,16 @@ return {
       vim.keymap.set('n', '<leader>dc', dap.continue) -- quit debugging session
     end,
   },
+  { 'kevinhwang91/nvim-bqf', ft = 'qf' },
+  {
+    'sindrets/diffview.nvim',
+    keys = {
+      { '<leader>gd', '<cmd>DiffviewOpen<cr>', desc = 'Diff working tree' },
+      { '<leader>gh', '<cmd>DiffviewFileHistory %<cr>', desc = 'File history (current file)' },
+      { '<leader>gH', '<cmd>DiffviewFileHistory<cr>', desc = 'File history (repo)' },
+      { '<leader>gc', '<cmd>DiffviewClose<cr>', desc = 'Close diffview' },
+    },
+  },
   {
     'folke/flash.nvim',
     event = 'VeryLazy',
@@ -255,20 +483,20 @@ return {
       -- },
     },
   },
-  {
-    'blazkowolf/gruber-darker.nvim',
-    priority = 1000,
-    opts = {
-      bold = false,
-      italic = {
-        strings = false,
-      },
-    },
-    config = function(_, opts)
-      require('gruber-darker').setup(opts)
-      vim.cmd.colorscheme 'gruber-darker'
-    end,
-  },
+  -- {
+  --   'blazkowolf/gruber-darker.nvim',
+  --   priority = 1000,
+  --   opts = {
+  --     bold = false,
+  --     italic = {
+  --       strings = false,
+  --     },
+  --   },
+  --   config = function(_, opts)
+  --     require('gruber-darker').setup(opts)
+  --     vim.cmd.colorscheme 'gruber-darker'
+  --   end,
+  -- },
   -- {
   --   'rebelot/kanagawa.nvim',
   --   priority = 1000,
@@ -300,11 +528,27 @@ return {
   --     vim.cmd.colorscheme 'kanagawa-dragon'
   --   end,
   -- },
+  {
+    'projekt0n/github-nvim-theme',
+    name = 'github-theme',
+    lazy = false, -- make sure we load this during startup if it is your main colorscheme
+    priority = 1000, -- make sure to load this before all the other start plugins
+    config = function()
+      require('github-theme').setup {
+        -- ...
+      }
+
+      vim.cmd 'colorscheme github_dark_high_contrast'
+    end,
+  },
   -- {
   --   'ellisonleao/gruvbox.nvim',
   --   priority = 1000,
   --   config = function()
-  --     require('gruvbox').setup {}
+  --     require('gruvbox').setup {
+  --       contrast = 'hard',
+  --     }
+  --     vim.o.background = 'dark'
   --     vim.cmd.colorscheme 'gruvbox'
   --   end,
   -- },
@@ -318,6 +562,53 @@ return {
   --       theme = { variant = 'default' },
   --     }
   --     vim.cmd.colorscheme 'cyberdream'
+  --   end,
+  -- },
+  --
+
+  -- {
+  --   'rose-pine/neovim',
+  --   priority = 1000,
+  --   config = function()
+  --     ---@diagnostic disable-next-line: missing-fields
+  --     require('rose-pine').setup {
+  --       -- Disable italics
+  --       styles = {
+  --         bold = true,
+  --         italic = false,
+  --         keywords = { italic = false },
+  --         functions = { italic = false },
+  --         conditionals = { italic = false },
+  --         loops = { italic = false },
+  --         variables = { italic = false },
+  --         comments = { italic = false },
+  --       },
+  --       -- Make background transparent/disabled
+  --       -- disable_background = true,
+  --     }
+  --
+  --     -- Load the colorscheme
+  --     vim.cmd.colorscheme 'rose-pine'
+  --
+  --     -- Set background to pure black for general UI
+  --     vim.cmd [[highlight Normal guibg=#000000]]
+  --     -- vim.cmd [[highlight NormalFloat guibg=#000000]]
+  --     vim.cmd [[highlight NormalNC guibg=#000000]]
+  --
+  --     -- Set Telescope elements to have black background
+  --     vim.cmd [[highlight TelescopeNormal guibg=#000000]]
+  --     vim.cmd [[highlight TelescopePrompt guibg=#000000]]
+  --     vim.cmd [[highlight TelescopeResults guibg=#000000]]
+  --
+  --     -- ============================
+  --     -- vim.cmd [[highlight TelescopePromptBorder guibg=#000000 guifg=#000000]]
+  --     -- vim.cmd [[highlight TelescopeResultsBorder guibg=#000000 guifg=#000000]]
+  --     -- vim.cmd [[highlight TelescopePreviewBorder guibg=#000000 guifg=#000000]]
+  --     -- vim.cmd [[highlight TelescopePreviewTitle guibg=#000000]]
+  --     -- vim.cmd [[highlight TelescopePromptTitle guibg=#000000]]
+  --     -- vim.cmd [[highlight TelescopeResultsTitle guibg=#000000]]
+  --     -- vim.cmd [[highlight TelescopeSelection guibg=#101010]] -- Slightly lighter for selection
+  --     -- vim.cmd [[highlight TelescopePreviewNormal guibg=#000000]]
   --   end,
   -- },
 }

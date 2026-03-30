@@ -1118,15 +1118,15 @@ require('lazy').setup({
   -- COLORSSCHEME END
 
   -- gruber-darker config moved to lua/custom/plugins/init.lua
--- {
---   "blazkowolf/gruber-darker.nvim",
---   opts = {
---     bold = false,
---     italic = {
---       strings = false,
---     },
---   },
--- }
+  -- {
+  --   "blazkowolf/gruber-darker.nvim",
+  --   opts = {
+  --     bold = false,
+  --     italic = {
+  --       strings = false,
+  --     },
+  --   },
+  -- }
   -- -- { -- You can easily change to a different colorscheme.
   -- --   -- Change the name of the colorscheme plugin below, and then
   -- --   -- change the command in the config to whatever the name of that colorscheme is.
