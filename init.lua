@@ -1172,8 +1172,13 @@ require('lazy').setup({
       -- - sr)'  - [S]urround [R]eplace [)] [']
       require('mini.surround').setup {
         mappings = {
-          add = '<leader>sa', -- Add surrounding in Normal and Visual modes
-          -- delete = '<leader>sd', -- Delete surrounding
+          add = '<leader>sa',
+          delete = '<leader>sd',
+          replace = '<leader>sr',
+          find = '<leader>sf',
+          find_left = '<leader>sF',
+          highlight = '<leader>sh',
+          update_n_lines = '<leader>sn',
         },
       }
 
