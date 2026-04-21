@@ -799,6 +799,15 @@ require('lazy').setup({
       })
       vim.lsp.config('ts_ls', {
         capabilities = capabilities,
+        init_options = {
+          hostInfo = 'neovim',
+          preferences = {
+            includeCompletionsForModuleExports = true,
+            includeCompletionsForImportStatements = true,
+            includeCompletionsWithInsertText = true,
+            importModuleSpecifierPreference = 'shortest',
+          },
+        },
       })
       vim.lsp.config('rust_analyzer', {
         capabilities = capabilities,
