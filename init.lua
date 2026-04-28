@@ -167,7 +167,12 @@ rtp:prepend(lazypath)
 require('lazy').setup({
   require 'custom.plugins',
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
-  'NMAC427/guess-indent.nvim', -- Detect tabstop and shiftwidth automatically
+  {
+    'NMAC427/guess-indent.nvim', -- Detect tabstop and shiftwidth automatically
+    opts = {
+      filetype_exclude = { 'python', 'netrw', 'tutor' },
+    },
+  },
 
   -- NOTE: Plugins can also be added by using a table,
   -- with the first argument being the link and the following
@@ -671,7 +676,9 @@ require('lazy').setup({
             },
           },
         },
-        -- clangd = {},
+        clangd = {
+          capabilities = capabilities,
+        },
         -- gopls = {},
         -- gopls = {
         --   -- on_init = on_init,
@@ -760,6 +767,7 @@ require('lazy').setup({
         'gofumpt',
         'goimports-reviser',
         'golines',
+        'clang-format',
       })
 
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
@@ -818,6 +826,9 @@ require('lazy').setup({
       vim.lsp.config('zls', {
         capabilities = capabilities,
       })
+      vim.lsp.config('clangd', {
+        capabilities = capabilities,
+      })
       vim.lsp.config('pyright', {
         settings = {
           python = {
@@ -841,7 +852,7 @@ require('lazy').setup({
         },
         capabilities = capabilities,
       })
-      vim.lsp.enable { 'gopls', 'ts_ls', 'rust_analyzer', 'eslint', 'zls', 'pyright', 'lua_ls' }
+      vim.lsp.enable { 'gopls', 'ts_ls', 'rust_analyzer', 'eslint', 'zls', 'pyright', 'lua_ls', 'clangd' }
     end,
   },
 
@@ -883,6 +894,8 @@ require('lazy').setup({
         go = { 'gofumpt', 'goimports-reviser', 'golines' },
         javascript = { 'prettier' },
         typescript = { 'prettier' },
+        c = { 'clang-format' },
+        cpp = { 'clang-format' },
         --
         -- You can use 'stop_after_first' to run the first available formatter from the list
         -- javascript = { "prettierd", "prettier", stop_after_first = true },
@@ -1212,22 +1225,43 @@ require('lazy').setup({
   },
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
+    branch = 'main',
     build = ':TSUpdate',
-    main = 'nvim-treesitter.configs', -- Sets main module to use for opts
+    main = 'nvim-treesitter', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc', 'python', 'go' },
+      -- ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc', 'python', 'go' },
       -- Autoinstall languages that are not installed
-      auto_install = true,
-      highlight = {
-        enable = true,
-        -- Some languages depend on vim's regex highlighting system (such as Ruby) for indent rules.
-        --  If you are experiencing weird indenting issues, add the language to
-        --  the list of additional_vim_regex_highlighting and disabled languages for indent.
-        additional_vim_regex_highlighting = { 'ruby' },
-      },
-      indent = { enable = true, disable = { 'ruby' } },
+      -- auto_install = true,
+      -- highlight = {
+      --   enable = true,
+      --   -- Some languages depend on vim's regex highlighting system (such as Ruby) for indent rules.
+      --   --  If you are experiencing weird indenting issues, add the language to
+      --   --  the list of additional_vim_regex_highlighting and disabled languages for indent.
+      --   additional_vim_regex_highlighting = { 'ruby' },
+      -- },
+      -- indent = { enable = true, disable = { 'ruby' } },
     },
+    init = function()
+      local ensureInstalled = { 'bash', 'c', 'cpp', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc', 'python', 'go' }
+      local alreadyInstalled = require('nvim-treesitter.config').get_installed()
+      local parsersToInstall = vim
+        .iter(ensureInstalled)
+        :filter(function(parser)
+          return not vim.tbl_contains(alreadyInstalled, parser)
+        end)
+        :totable()
+      require('nvim-treesitter').install(parsersToInstall)
+      vim.api.nvim_create_autocmd('FileType', {
+        callback = function()
+          -- Enable treesitter highlighting and disable regex syntax
+          pcall(vim.treesitter.start)
+          -- Enable treesitter-based indentation
+          vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+        end,
+      })
+      -- ...
+    end,
     -- There are additional nvim-treesitter modules that you can use to interact
     -- with nvim-treesitter. You should go explore a few and see what interests you:
     --
